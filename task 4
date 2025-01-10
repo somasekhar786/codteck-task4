@@ -1,0 +1,106 @@
+In this task we will see window funtions,sub queries and CTE's
+
+
+window functions:
+
+Window functions allow you to perform calculations across a set
+of table rows that are related to the current row. They are useful
+for calculating running totals, moving averages, and ranking data.
+Examples include ROW_NUMBER(), RANK(), LEAD(), and LAG().
+
+for this if see an example means:
+Calculate the running total of sales for each month.
+
+SELECT
+    month,
+    sales,
+    SUM(sales) OVER (ORDER BY month) AS running_total
+FROM
+    sales_data;
+
+sub queries:
+
+Subqueries are queries nested within another SQL query. 
+They can be used to filter data, calculate aggregated values,
+or perform complex joins.
+
+for this if we see an example:
+Find employees who earn more than the average salary in their department.
+
+SELECT
+    employee_id,
+    employee_name,
+    salary
+FROM
+    employees
+WHERE
+    salary > (SELECT AVG(salary) FROM employees);
+
+CTE's(common table expressions):
+
+CTEs are temporary result sets that can be referenced within a SELECT,
+INSERT, UPDATE, or DELETE statement. They improve the readability and 
+organization of complex queries.
+
+for this if we an example 
+Use a CTE to find the top 3 earners in each department
+
+WITH ranked_employees AS (
+    SELECT
+        employee_id,
+        employee_name,
+        department_id,
+        salary,
+        ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) AS rank
+    FROM
+        employees
+)
+SELECT
+    employee_id,
+    employee_name,
+    department_id,
+    salary
+FROM
+    ranked_employees
+WHERE
+    rank <= 3;
+
+at final if we place at altogether then
+Analyze sales trends and identify top-selling products.
+
+WITH monthly_sales AS (
+    SELECT
+        product_id,
+        DATE_TRUNC('month', sale_date) AS sale_month,
+        SUM(sales_amount) AS monthly_sales
+    FROM
+        sales_data
+    GROUP BY
+        product_id,
+        sale_month
+),
+ranked_products AS (
+    SELECT
+        product_id,
+        sale_month,
+        monthly_sales,
+        RANK() OVER (PARTITION BY sale_month ORDER BY monthly_sales DESC) AS rank
+    FROM
+        monthly_sales
+)
+SELECT
+    product_id,
+    sale_month,
+    monthly_sales,
+    rank
+FROM
+    ranked_products
+WHERE
+    rank <= 5;
+
+in this example we will :
+Use a CTE (monthly_sales) to calculate the total sales for each product by month.
+
+Use a window function (RANK()) to rank the products by sales within each month.
+
+Generate a final report that shows the top 5 products for each month.
